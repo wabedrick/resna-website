@@ -237,7 +237,7 @@ ul {
 .hero {
     min-height: 75vh;
     padding: 110px 0 50px;
-    background: url('../images/hero_bg.png') center/cover no-repeat;
+    background: url('../images/hero_bg.jpeg') center 25%/cover no-repeat;
     position: relative;
     display: flex;
     align-items: center;
@@ -538,7 +538,7 @@ ul {
 /* Page Headers */
 .page-header {
     padding: 105px 0 35px;
-    background: linear-gradient(rgba(76, 29, 149, 0.8), rgba(46, 16, 101, 0.9)), url('../images/hero_bg.png') center/cover no-repeat;
+    background: linear-gradient(rgba(76, 29, 149, 0.82), rgba(46, 16, 101, 0.92)), url('../images/hero_bg.jpeg') center 25%/cover no-repeat;
     text-align: center;
     color: var(--white);
 }
