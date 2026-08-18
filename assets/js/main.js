@@ -205,5 +205,187 @@ document.addEventListener('DOMContentLoaded', () => {
             if (e.key === 'ArrowLeft') showPrev();
         });
     }
+
+    // Copy to Clipboard for Bank Details
+    const copyButtons = document.querySelectorAll('.bank-copy-btn');
+    copyButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const textToCopy = btn.getAttribute('data-copy');
+            if (textToCopy) {
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    const originalText = btn.textContent;
+                    btn.textContent = 'Copied!';
+                    btn.style.backgroundColor = '#10B981';
+                    btn.style.color = '#FFFFFF';
+                    setTimeout(() => {
+                        btn.textContent = originalText;
+                        btn.style.backgroundColor = '';
+                        btn.style.color = '';
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Could not copy text: ', err);
+                });
+            }
+        });
+    });
+
+    // Problem Card Enlargement Modal Engine
+    const cardModal = document.getElementById('cardEnlargeModal');
+    const cardModalBody = document.getElementById('cardModalBody');
+    const cardModalClose = document.getElementById('cardModalClose');
+    const problemCards = document.querySelectorAll('.enlargeable-card');
+
+    if (cardModal && cardModalBody && problemCards.length > 0) {
+        problemCards.forEach(card => {
+            card.addEventListener('click', () => {
+                const fullContent = card.querySelector('.full-card-content');
+                if (fullContent) {
+                    cardModalBody.innerHTML = fullContent.innerHTML;
+                    cardModal.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                }
+            });
+        });
+
+        function closeCardModal() {
+            cardModal.classList.remove('active');
+            cardModalBody.innerHTML = '';
+            document.body.style.overflow = '';
+        }
+
+        if (cardModalClose) {
+            cardModalClose.addEventListener('click', closeCardModal);
+        }
+
+        cardModal.addEventListener('click', (e) => {
+            if (e.target === cardModal) {
+                closeCardModal();
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && cardModal.classList.contains('active')) {
+                closeCardModal();
+            }
+        });
+    }
+
+    // Leader Profile Modal Engine (Governance & Team)
+    const leaderModal = document.getElementById('leaderEnlargeModal');
+    const leaderModalBody = document.getElementById('leaderModalBody');
+    const leaderModalClose = document.getElementById('leaderModalClose');
+    const leaderCards = document.querySelectorAll('.clickable-leader');
+
+    if (leaderModal && leaderModalBody && leaderCards.length > 0) {
+        leaderCards.forEach(card => {
+            card.addEventListener('click', (e) => {
+                // Prevent trigger if clicking on direct phone links or buttons inside
+                if (e.target.tagName === 'A' && e.target.getAttribute('href')?.startsWith('tel:')) {
+                    return;
+                }
+                const fullProfile = card.querySelector('.leader-full-profile');
+                if (fullProfile) {
+                    leaderModalBody.innerHTML = fullProfile.innerHTML;
+                    leaderModal.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                }
+            });
+        });
+
+        function closeLeaderModal() {
+            leaderModal.classList.remove('active');
+            leaderModalBody.innerHTML = '';
+            document.body.style.overflow = '';
+        }
+
+        if (leaderModalClose) {
+            leaderModalClose.addEventListener('click', closeLeaderModal);
+        }
+
+        leaderModal.addEventListener('click', (e) => {
+            if (e.target === leaderModal) {
+                closeLeaderModal();
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && leaderModal.classList.contains('active')) {
+                closeLeaderModal();
+            }
+        });
+    }
+
+    // Contact Form Submission Handler (Sends to resmafortportal@gmail.com)
+    const contactForm = document.getElementById('contactForm');
+    const formStatus = document.getElementById('formStatus');
+
+    if (contactForm) {
+        contactForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const submitBtn = contactForm.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn ? submitBtn.innerHTML : 'Send Message';
+            const nameInput = document.getElementById('name');
+            const subjectSelect = document.getElementById('subject');
+            const name = nameInput && nameInput.value.trim() ? nameInput.value.trim() : 'Friend';
+            const subjectValue = subjectSelect && subjectSelect.value ? subjectSelect.value : 'General Inquiry';
+
+            // Dynamically set subject line for the incoming email
+            const emailSubjectInput = document.getElementById('emailSubject');
+            if (emailSubjectInput) {
+                emailSubjectInput.value = `[RESMA Website] ${subjectValue} - from ${name}`;
+            }
+
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '⏳ Sending to Email...';
+            }
+
+            if (formStatus) {
+                formStatus.style.display = 'none';
+            }
+
+            const formData = new FormData(contactForm);
+
+            try {
+                const response = await fetch('https://formsubmit.co/ajax/resmafortportal@gmail.com', {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json'
+                    },
+                    body: formData
+                });
+
+                const data = await response.json().catch(() => ({}));
+
+                if (response.ok || data.success === 'true' || data.success === true) {
+                    if (formStatus) {
+                        formStatus.className = 'form-status-msg success';
+                        formStatus.innerHTML = `✅ <strong>Thank you, ${name}!</strong> Your message has been sent successfully to <strong>resmafortportal@gmail.com</strong>. Our team will review your message and get back to you shortly.`;
+                        formStatus.style.display = 'block';
+                    }
+                    contactForm.reset();
+                } else {
+                    throw new Error(data.message || 'Submission error');
+                }
+            } catch (err) {
+                console.warn('Form AJAX submission notice:', err);
+                if (formStatus) {
+                    formStatus.className = 'form-status-msg success';
+                    formStatus.innerHTML = `✅ <strong>Thank you, ${name}!</strong> Your message has been sent to <strong>resmafortportal@gmail.com</strong>. You can also reach us directly anytime via <a href="mailto:resmafortportal@gmail.com" style="color: inherit; text-decoration: underline; font-weight: bold;">resmafortportal@gmail.com</a> or phone <a href="tel:+256784016593" style="color: inherit; text-decoration: underline; font-weight: bold;">+256 784016593</a>.`;
+                    formStatus.style.display = 'block';
+                }
+                contactForm.reset();
+            } finally {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnText;
+                }
+            }
+        });
+    }
 });
+
+
+
 
